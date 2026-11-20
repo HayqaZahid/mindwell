@@ -11,13 +11,22 @@ import chatbotRoutes from "./routes/chatbot.js";
 import communityRoutes from "./routes/community.js";
 
 dotenv.config();
-connectDB();
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
 app.get("/api/health", (req, res) => res.json({ status: "ok" }));
+
+// connect (or reuse the connection) before any real route runs
+app.use(async (req, res, next) => {
+  try {
+    await connectDB();
+    next();
+  } catch (err) {
+    res.status(500).json({ message: "Database connection failed" });
+  }
+});
 
 app.use("/api/auth", authRoutes);
 app.use("/api/mood", moodRoutes);
